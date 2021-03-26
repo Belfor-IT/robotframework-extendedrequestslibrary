@@ -55,17 +55,17 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
 
     Examples:
     | `Create Client OAuth2 Session` | client-label | https://token | key | secret | base_url=https://service |
-    | ${var} = | `Post Request` | client-label | /endpoint | json=${"key": "value"} |
+    | ${var} = | `POST On Session` | client-label | /endpoint | json=${"key": "value"} |
     | Log | ${var} |
     | `Create Password OAuth2 Session` | member-label | https://token | key | secret | usn | pwd | base_url=https://service |
-    | ${var} = | `Post Request` | member-label | /endpoint | json=${"key": "value"} |
+    | ${var} = | `POST On Session` | member-label | /endpoint | json=${"key": "value"} |
     | Log | ${var} |
     | `Delete All Sessions` |
 
     Example for File Upload:
     | &{files} = | Create Dictionary | file1=/path/to/a_file.ext | file2=/path/to/another_file.ext | # Collections library |
     | `Create Client OAuth2 Session` | label | https://token | key | secret | base_url=https://service |
-    | ${var} = | `Post Request` | label | /endpoint | files=&{files} |
+    | ${var} = | `POST On Session` | label | /endpoint | files=&{files} |
     | Log | ${var} |
 
     Non-inherited Keywords:
@@ -84,7 +84,6 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
     | `Patch`   |
     | `Post`    |
     | `Put`     |
-    | `To Json` |
     """
     # pylint: disable=line-too-long
 
@@ -107,7 +106,7 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
 
     def __getattribute__(self, name):
         """Returns requested attribute."""
-        if name in ('delete', 'get', 'head', 'options', 'patch', 'post', 'put', 'to_json'):
+        if name in ('delete', 'get', 'head', 'options', 'patch', 'post', 'put'):
             raise AttributeError("'%s' is deprecated." % name)
         return super(ExtendedRequestsLibrary, self).__getattribute__(name)
 
@@ -203,8 +202,8 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
         """
         return super(ExtendedRequestsLibrary, self).create_session(label, base_url, **kwargs)
 
-    def delete_request(self, label, uri, **kwargs):
-        """Send a DELETE request on the session object found in the cache using the given
+    def delete_on_session(self, label, uri, **kwargs):
+        """Send a DELETE On Session  on the session object found in the cache using the given
         ``label``.
 
         Arguments:
@@ -218,7 +217,7 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
         - ``allow_redirects``: A flag to allow connection redirects.
 
         Examples:
-        | ${var} = | Delete Request | label | /endpoint |
+        | ${var} = | DELETE On Session  | label | /endpoint |
         """
         allow_redirects = bool(kwargs.pop('allow_redirects', None))
         data = self._utf8_urlencode(kwargs.pop('data', None))
@@ -248,8 +247,8 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
         # pylint: disable=protected-access
         self._cache._aliases['x-%s-x' % label] = self._cache._aliases.pop(label)
 
-    def get_request(self, label, uri, **kwargs):
-        """Send a GET request on the session object found in the cache using the given ``label``.
+    def get_on_session(self, label, uri, **kwargs):
+        """Send a GET On Session  on the session object found in the cache using the given ``label``.
 
         Arguments:
         - ``label``: A case and space insensitive string to identify
@@ -261,7 +260,7 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
         - ``allow_redirects``: A flag to allow connection redirects.
 
         Examples:
-        | ${var} = | Get Request | label | /endpoint |
+        | ${var} = | GET On Session  | label | /endpoint |
         """
         allow_redirects = bool(kwargs.pop('allow_redirects', None))
         headers = kwargs.pop('headers', None)
@@ -286,8 +285,8 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
         logger.debug(vars(response))
         return response
 
-    def head_request(self, label, uri, **kwargs):
-        """Send a HEAD request on the session object found in the cache using the given ``label``.
+    def head_on_session(self, label, uri, **kwargs):
+        """Send a HEAD On Session  on the session object found in the cache using the given ``label``.
 
         Arguments:
         - ``label``: A case and space insensitive string to identify
@@ -298,7 +297,7 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
         - ``allow_redirects``: A flag to allow connection redirects.
 
         Examples:
-        | ${var} = | Head Request | label | /endpoint |
+        | ${var} = | HEAD On Session  | label | /endpoint |
         """
         allow_redirects = bool(kwargs.pop('allow_redirects', None))
         headers = kwargs.pop('headers', None)
@@ -309,7 +308,7 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
         return self._finalize_response(session, response, 'HEAD')
 
     def options_request(self, label, uri, **kwargs):
-        """Send a OPTIONS request on the session object found in the cache
+        """Send a OPTIONS On Session on the session object found in the cache
         using the given ``label``.
 
         Arguments:
@@ -321,7 +320,7 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
         - ``allow_redirects``: A flag to allow connection redirects.
 
         Examples:
-        | ${var} = | Options Request | label | /endpoint |
+        | ${var} = | OPTIONS On Session | label | /endpoint |
         """
         allow_redirects = bool(kwargs.pop('allow_redirects', None))
         headers = kwargs.pop('headers', None)
@@ -331,9 +330,9 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
                                    **kwargs)
         return self._finalize_response(session, response, 'OPTIONS')
 
-    def patch_request(self, label, uri, **kwargs):
+    def patch_on_session(self, label, uri, **kwargs):
         # pylint: disable=line-too-long
-        """Send a PATCH request on the session object found in the cache
+        """Send a PATCH On Session on the session object found in the cache
         using the given ``label``.
 
         Arguments:
@@ -349,7 +348,7 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
 
         Examples:
         | &{files} = | Create Dictionary | file1=/path/to/a_file.ext | file2=/path/to/another_file.ext | # Collections library |
-        | ${var} = | Patch Request | label | /endpoint | files=&{files} |
+        | ${var} = | PATCH On Session | label | /endpoint | files=&{files} |
         """
         # pylint: disable=line-too-long
         allow_redirects = bool(kwargs.pop('allow_redirects', None))
@@ -365,9 +364,9 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
                                  timeout=self.timeout, **kwargs)
         return self._finalize_response(session, response, 'PATCH')
 
-    def post_request(self, label, uri, **kwargs):
+    def post_on_session(self, label, uri, **kwargs):
         # pylint: disable=line-too-long
-        """Send a POST request on the session object found in the cache using the given ``label``.
+        """Send a POST On Session on the session object found in the cache using the given ``label``.
 
         Arguments:
         - ``label``: A case and space insensitive string to identify
@@ -382,7 +381,7 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
 
         Examples:
         | &{files} = | Create Dictionary | file1=/path/to/a_file.ext | file2=/path/to/another_file.ext | # Collections library |
-        | ${var} = | Post Request | label | /endpoint | files=&{files} |
+        | ${var} = | POST On Session | label | /endpoint | files=&{files} |
         """
         # pylint: disable=line-too-long
         allow_redirects = bool(kwargs.pop('allow_redirects', None))
@@ -398,8 +397,8 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
                                 timeout=self.timeout, **kwargs)
         return self._finalize_response(session, response, 'POST')
 
-    def put_request(self, label, uri, **kwargs):
-        """Send a PUT request on the session object found in the cache using the given ``label``.
+    def put_on_session(self, label, uri, **kwargs):
+        """Send a PUT On Session  on the session object found in the cache using the given ``label``.
 
         Arguments:
         - ``label``: A case and space insensitive string to identify
@@ -412,7 +411,7 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
         - ``allow_redirects``: A flag to allow connection redirects.
 
         Examples:
-        | ${var} = | Put Request | label | /endpoint |
+        | ${var} = | PUT On Session  | label | /endpoint |
         """
         allow_redirects = bool(kwargs.pop('allow_redirects', None))
         data = self._utf8_urlencode(kwargs.pop('data', None))
@@ -470,14 +469,14 @@ class ExtendedRequestsLibrary(RequestsLibrary, Utility):
         return response
 
     def _register_url(self, url=None):
-        """Make HEAD request to warm up the destination server"""
+        """Make HEAD On Session  to warm up the destination server"""
         host = urlparse(url).hostname
         if host not in self._primers:
             requests.head('%s' % url, verify=False)
             self._primers[host] = 1
 
     def _register_urls(self, base_url=None, token_url=None):
-        """Make HEAD requests for both base URL and token URL"""
+        """Make HEAD On Session s for both base URL and token URL"""
         self._register_url(base_url)
         self._register_url(token_url)
 
